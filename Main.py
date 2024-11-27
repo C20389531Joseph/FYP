@@ -25,7 +25,7 @@ def load_answers_from_docs(doc_files):
     return questions, answers, scores
 
 # Load dataset
-doc_files = ["answerset1.doc", "answerset2.doc", "answerset3.doc"]
+doc_files = ["answerset1.doc", "answerset2.doc", "answerset3.doc", "answerset4.doc", "answerset5.doc", "answerset6.doc", "answerset7.doc", "answerset8.doc", "answerset9.doc", "answerset10.doc",]
 questions, answers, scores = load_answers_from_docs(doc_files)
 
 # Preprocess text: Tokenization and padding
