@@ -65,3 +65,86 @@ export default function EssayGrader() {
     </div>
   );
 }
+
+/*
+ TODO test redesign 
+import React, { useState } from "react";
+
+export default function AssignmentSubmission() {
+  const [file, setFile] = useState(null);
+  const [dragActive, setDragActive] = useState(false);
+
+  const handleFileUpload = (event) => {
+    setFile(event.target.files[0]);
+  };
+
+  const handleDragOver = (event) => {
+    event.preventDefault();
+    setDragActive(true);
+  };
+
+  const handleDragLeave = () => {
+    setDragActive(false);
+  };
+
+  const handleDrop = (event) => {
+    event.preventDefault();
+    setDragActive(false);
+    if (event.dataTransfer.files.length > 0) {
+      setFile(event.dataTransfer.files[0]);
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (!file) {
+      alert("Please upload a file before submitting.");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const response = await fetch("http://localhost:5000/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      
+      alert("Submission successful!");
+    } catch (error) {
+      console.error("Error:", error);
+      alert("Failed to submit. Check console for details.");
+    }
+  };
+
+  return (
+    <div className="container" style={{ maxWidth: "600px", margin: "0 auto", padding: "20px" }}>
+      <h2>Submit Assignment</h2>
+      <p><strong>Files to submit:</strong> {file ? file.name : "(0) file(s) to submit"}</p>
+      
+      <div
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+        style={{
+          border: "2px dashed #ccc",
+          padding: "20px",
+          textAlign: "center",
+          marginBottom: "10px",
+          backgroundColor: dragActive ? "#f0f0f0" : "white"
+        }}
+      >
+        {file ? file.name : "Drag & drop a file here or click to upload"}
+        <input type="file" onChange={handleFileUpload} style={{ display: "none" }} />
+      </div>
+      
+      <button onClick={handleSubmit} style={{ marginRight: "10px" }}>Submit</button>
+      <button onClick={() => setFile(null)}>Cancel</button>
+    </div>
+  );
+}
+*/
