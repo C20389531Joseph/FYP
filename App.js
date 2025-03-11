@@ -1,3 +1,4 @@
+/*
 import React, { useState } from "react";
 
 export default function EssayGrader() {
@@ -41,7 +42,7 @@ export default function EssayGrader() {
     <div className="container">
       <h2>Essay Grader</h2>
 
-      {/* Model Selection Dropdown */}
+      //{/ Model Selection Dropdown}
       <label>Select Model:</label>
       <select onChange={(e) => setSelectedModel(e.target.value)}>
         <option value="LSTM">LSTM</option>
@@ -49,13 +50,13 @@ export default function EssayGrader() {
         <option value="GPT">GPT</option>
       </select>
 
-      {/* File Upload */}
+      //{File Upload }
       <input type="file" onChange={handleFileUpload} />
 
-      {/* Submit Button */}
+      //{/* Submit Button }
       <button onClick={handleSubmit}>Grade Essay</button>
 
-      {/* Display Feedback */}
+      //{/* Display Feedback }
       {feedback && (
         <div>
           <h3>Feedback:</h3>
@@ -65,14 +66,16 @@ export default function EssayGrader() {
     </div>
   );
 }
-
-/*
- TODO test redesign 
+*/ 
+// TODO test redesign 
 import React, { useState } from "react";
 
 export default function AssignmentSubmission() {
   const [file, setFile] = useState(null);
   const [dragActive, setDragActive] = useState(false);
+  const [model, setModel] = useState("LSTM");
+  const [feedback, setFeedback] = useState("");
+  const fileInputRef = useRef(null);
 
   const handleFileUpload = (event) => {
     setFile(event.target.files[0]);
@@ -103,6 +106,7 @@ export default function AssignmentSubmission() {
 
     const formData = new FormData();
     formData.append("file", file);
+    formData.append("model", model);
 
     try {
       const response = await fetch("http://localhost:5000/upload", {
@@ -126,10 +130,12 @@ export default function AssignmentSubmission() {
       <h2>Submit Assignment</h2>
       <p><strong>Files to submit:</strong> {file ? file.name : "(0) file(s) to submit"}</p>
       
+      
       <div
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
-        onDrop={handleDrop}
+        onDrop={handleDrop}        
+        onClick={handleClickUpload}
         style={{
           border: "2px dashed #ccc",
           padding: "20px",
@@ -139,12 +145,25 @@ export default function AssignmentSubmission() {
         }}
       >
         {file ? file.name : "Drag & drop a file here or click to upload"}
-        <input type="file" onChange={handleFileUpload} style={{ display: "none" }} />
+        <input type="file" ref={fileInputRef} onChange={handleFileUpload} style={{ display: "none" }} />
       </div>
+
+      <label>Select Model:</label>
+      <select value={model} onChange={(e) => setModel(e.target.value)} style={{ display: "block", marginBottom: "10px" }}>
+        <option value="LSTM">LSTM</option>
+        <option value="BERT">BERT</option>
+        <option value="GPT">GPT</option>
+      </select>
       
       <button onClick={handleSubmit} style={{ marginRight: "10px" }}>Submit</button>
       <button onClick={() => setFile(null)}>Cancel</button>
+
+      {feedback && (
+        <div style={{ marginTop: "20px", padding: "10px", border: "1px solid #ccc", backgroundColor: "#f9f9f9" }}>
+          <strong>Feedback:</strong>
+          <p>{feedback}</p>
+        </div>
+      )}
     </div>
   );
 }
-*/
