@@ -2,7 +2,6 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from models import EssayGradingModel
 
-
 app = Flask(__name__)
 
 CORS(app)  # Enable CORS
@@ -37,7 +36,10 @@ def upload_file():
     # Process the file and grade the essay
     feedback = essay_grader.grade_essay(file)
     
-    # Return feedback as a JSON response
-    return jsonify(feedback), 200
+   # Ensure feedback is a dictionary and is serializable
+    if isinstance(feedback, dict):
+        return jsonify(feedback), 200
+    else:
+        return jsonify({"error": "Invalid response format from grading model."}), 500
 if __name__ == "__main__":
     app.run(debug=True)

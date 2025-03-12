@@ -53,7 +53,8 @@ export default function AssignmentSubmission() {
       }
       
       const result = await response.json();
-      setFeedback(result.feedback || "Submission successful! No additional feedback.");
+      console.log(result); 
+      setFeedback(result || {});
     } catch (error) {
       console.error("Error:", error);
       alert("Failed to submit. Check console for details.");
@@ -62,6 +63,13 @@ export default function AssignmentSubmission() {
 
   return (
     <div className="container" style={{ maxWidth: "600px", margin: "0 auto", padding: "20px" }}>
+      <h1>Automatic Exam Essay Grader with AI Feedback <br></br></h1>
+      <p>My automatic exam essay grader with AI feedback program allows students to get estimates of 
+        the quality of their exam practice and possibly points of feedback and advice on weaknesses and potential 
+        areas of improvements for their study. This system will use a combination of BERT and LSTM machine learning 
+        models to grade practice exam papers. The results of this paper and the grading rubric, and the paper will be 
+        passed on into an AI that will rewrite the grade and feedback into a more human readable format and with additional context.</p>
+        
       <h2>Submit Assignment</h2>
       <p><strong>Files to submit:</strong> {file ? file.name : "(0) file(s) to submit"}</p>
       
@@ -96,7 +104,17 @@ export default function AssignmentSubmission() {
       {feedback && (
         <div style={{ marginTop: "20px", padding: "10px", border: "1px solid #ccc", backgroundColor: "#f9f9f9" }}>
           <strong>Feedback:</strong>
-          <p>{feedback}</p>
+          {Object.keys(feedback).length === 0 ? (
+            <p>No feedback available. Please check if the model type or file is correct.</p>
+          ) : (
+            <ul>
+              {Object.entries(feedback).map(([category, score]) => (
+                <li key={category}>
+                  <strong>{category}:</strong> {score}
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       )}
     </div>
