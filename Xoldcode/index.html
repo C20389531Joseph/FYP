@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Essay Grader</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .drop-zone {
+            border: 2px dashed #007bff;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        .drop-zone.dragover {
+            background-color: #f8f9fa;
+        }
+        .feedback-area {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <h2 class="mb-4">Essay Grader</h2>
+
+        <!-- Model Selection Dropdown -->
+        <div class="mb-3">
+            <label for="modelSelect" class="form-label">Select Model:</label>
+            <select class="form-select" id="modelSelect">
+                <option value="BERT">BERT</option>
+                <option value="LSTM">LSTM</option>
+                <option value="GPT">GPT</option>
+            </select>
+        </div>
+
+        <!-- File Upload -->
+        <div class="drop-zone" id="dropZone">
+            <p>Drag & Drop your essay file here or click to upload</p>
+            <input type="file" id="fileInput" style="display: none;">
+        </div>
+
+        <!-- Submit Button -->
+        <button class="btn btn-primary mt-3" id="submitBtn">Grade Essay</button>
+
+        <!-- Display Feedback -->
+        <div class="feedback-area" id="feedbackArea" style="display: none;">
+            <h3>Feedback:</h3>
+            <pre id="feedbackContent"></pre>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const dropZone = document.getElementById('dropZone');
+            const fileInput = document.getElementById('fileInput');
+            const submitBtn = document.getElementById('submitBtn');
+            const feedbackArea = document.getElementById('feedbackArea');
+            const feedbackContent = document.getElementById('feedbackContent');
+            const modelSelect = document.getElementById('modelSelect');
+
+            // Drag and drop event handlers
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.classList.add('dragover');
+            });
+
+            dropZone.addEventListener('dragleave', () => {
+                dropZone.classList.remove('dragover');
+            });
+
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('dragover');
+                fileInput.files = e.dataTransfer.files;
+            });
+
+            dropZone.addEventListener('click', () => {
+                fileInput.click();
+            });
+
+            fileInput.addEventListener('change', () => {
+                if (fileInput.files.length) {
+                    dropZone.innerHTML = `<p>File selected: ${fileInput.files[0].name}</p>`;
+                }
+            });
+
+            // Submit button event handler
+            submitBtn.addEventListener('click', async () => {
+                if (!fileInput.files.length) {
+                    alert('Please upload an essay file!');
+                    return;
+                }
+
+                const formData = new FormData();
+                formData.append('model', modelSelect.value);
+                formData.append('file', fileInput.files[0]);
+
+                try {
+                    const response = await fetch('http://127.0.0.1:5000/upload', {
+                        method: 'POST',
+                        body: formData,
+                    });
+
+                    const result = await response.json();
+                    feedbackContent.textContent = JSON.stringify(result.feedback, null, 2);
+                    feedbackArea.style.display = 'block';
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('An error occurred while grading the essay.');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
