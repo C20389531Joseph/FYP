@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Essay Grader</title>
+</head>
+<body>
+    <h1>Upload your essay</h1>
+    <form method="post" enctype="multipart/form-data">
+        <label for="year">Select Year:</label>
+        <select name="year" id="year" required>
+            <option value="2025">2025</option>
+            <option value="2024">2024</option>
+            <option value="2023">2023</option>
+        </select><br><br>
+
+        <input type="file" name="document" accept=".txt,.docx" required><br><br>
+        <input type="submit" value="Submit">
+    </form>
+
+    {% if result %}
+        <h2>{{ result }}</h2>
+    {% endif %}
+</body>
+</html>
