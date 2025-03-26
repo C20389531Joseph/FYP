@@ -50,7 +50,7 @@ def extract_text(filepath):
     else:
         raise ValueError("Unsupported file type. Only .txt and .docx are allowed.")
 
-def grade_essay(filepath, year):
+def grade_LSTM_essay(filepath, year):
     text = extract_text(filepath)
 
     # Preprocessing
@@ -67,4 +67,4 @@ def grade_essay(filepath, year):
     formatted_scores = [f"{score:.4f}/{max_score}" for score, max_score in zip(result, max_scores)]
     formatted_output = ", ".join(formatted_scores)
 
-    return f"Predicted Grade (Model {year}): {formatted_output}"
+    return f"Predicted Grade LSTM model {year}: \n{formatted_output}"
