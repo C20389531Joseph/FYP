@@ -15,7 +15,7 @@ def extract_text(filepath):
     else:
         raise ValueError("Unsupported file type. Only .txt and .docx are allowed.")
 
-MODEL_PATHS = {'2025': 'C:\\Users\\JOSEP\\Documents\\bert_essay_grading_model', '2024': 'C:\\Users\\JOSEP\\Documents\\bert_essay_grading_model2\\config.json', '2023': 'C:\\Users\\JOSEP\\Documents\\bert_essay_grading_model3'}
+MODEL_PATHS = {'2025': 'C:\\Users\\JOSEP\\Documents\\bert_essay_grading_model', '2024': 'C:\\Users\\JOSEP\\Documents\\bert_essay_grading_model2', '2023': 'C:\\Users\\JOSEP\\Documents\\bert_essay_grading_model3'}
 
 MAX_SCORES_BY_YEAR = {
     "2025": [4, 2, 3, 3, 6],
