@@ -1,24 +1,108 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Essay Grader</title>
+    <title>Automatic Exam Essay Grader with AI Feedback</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <h1>Upload your essay</h1>
-    <form method="post" enctype="multipart/form-data">
-        <label for="year">Select Year:</label>
-        <select name="year" id="year" required>
-            <option value="2025">2025</option>
-            <option value="2024">2024</option>
-            <option value="2023">2023</option>
-        </select><br><br>
+    <div class="container">
+        <h1>Automatic Exam Essay Grader with AI Feedback</h1>
+        <p>
+            My automatic exam essay grader with AI feedback program allows students to get
+            estimates of the quality of their exam practice and possibly points of feedback and
+            advice on weaknesses and potential areas of improvements for their study. This
+            system will use a combination of BERT and LSTM machine learning models to grade
+            practice exam papers. The results of this paper and the grading rubric, and the paper
+            will be passed on into an AI that will rewrite the grade and feedback into a more
+            human readable format and with additional context.
+        </p>
 
-        <input type="file" name="document" accept=".txt,.docx" required><br><br>
-        <input type="submit" value="Submit">
-    </form>
+        <h2>Submit Assignment</h2>
+        <form method="POST" enctype="multipart/form-data">
+            <label for="fileInput">Files to submit: </label>
+            <div id="drop-area" class="upload-container">
+                <p>
+                    <span id="file-name">Drag & drop a file here or click to upload</span>
+                    <span id="cancel-file" style="display: none; cursor: pointer; margin-left: 10px; color: red;">&times;</span>
+                </p>
+                <input type="file" id="fileInput" name="document" style="display: none;">
+            </div>
 
-    {% if result %}
-        <h2>{{ result }}</h2>
-    {% endif %}
+            <label for="year">Select Model:</label>
+            <select name="year" id="year" required>
+                <option value="">-- Select Year --</option>
+                <option value="2025">2025</option>
+                <option value="2024">2024</option>
+                <option value="2023">2023</option>
+            </select><br>
+
+            <button type="submit">Submit</button>
+            <button type="reset">Cancel</button>
+        </form>
+
+        <button id="darkModeToggle">Toggle Dark Mode</button>
+
+        {% if result %}
+            <div id="result">
+                <strong>Results:</strong><br>
+                {{ result|safe }}
+            </div>
+        {% endif %}
+    </div>
+
+    <script>
+        const dropArea = document.getElementById("drop-area");
+        const fileInput = document.getElementById("fileInput");
+        const fileName = document.getElementById("file-name");
+        const cancelFile = document.getElementById("cancel-file");
+    
+        // Drag over highlight
+        dropArea.addEventListener("dragover", (e) => {
+            e.preventDefault();
+            dropArea.classList.add("dragover");
+        });
+    
+        // Drag leave
+        dropArea.addEventListener("dragleave", () => {
+            dropArea.classList.remove("dragover");
+        });
+    
+        // File drop handler
+        dropArea.addEventListener("drop", (e) => {
+            e.preventDefault();
+            dropArea.classList.remove("dragover");
+            if (e.dataTransfer.files.length > 0) {
+                fileInput.files = e.dataTransfer.files;
+                fileName.textContent = fileInput.files[0].name;
+                cancelFile.style.display = "inline";
+            }
+        });
+    
+        // Click to open file dialog
+        dropArea.addEventListener("click", () => {
+            fileInput.click();
+        });
+    
+        // Manual file selection
+        fileInput.addEventListener("change", () => {
+            if (fileInput.files.length > 0) {
+                fileName.textContent = fileInput.files[0].name;
+                cancelFile.style.display = "inline";
+            }
+        });
+    
+        // Cancel file selection
+        cancelFile.addEventListener("click", (e) => {
+            e.stopPropagation(); // prevent click from opening file dialog
+            fileInput.value = ""; // clear the file input
+            fileName.textContent = "Drag & drop a file here or click to upload";
+            cancelFile.style.display = "none";
+        });
+    
+        // Dark mode toggle
+        document.getElementById("darkModeToggle").addEventListener("click", () => {
+            document.body.classList.toggle("dark-mode");
+        });
+    </script>    
 </body>
 </html>
