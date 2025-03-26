@@ -10,6 +10,12 @@ MODEL_PATHS = {
     "2024": r"C:\Users\JOSEP\OneDrive\Documents\FYP\NewModelData\essay_grading_model2.keras",
     "2023": r"C:\Users\JOSEP\OneDrive\Documents\FYP\NewModelData\essay_grading_model3.keras"
 }
+MAX_SCORES_BY_YEAR = {
+    "2025": [4, 2, 3, 3, 6],
+    "2024": [3, 2, 3, 2, 5],
+    #"2023": [3, 2, 3, 2, 5]
+}
+
 
 _loaded_models = {}
 
@@ -47,10 +53,18 @@ def extract_text(filepath):
 def grade_essay(filepath, year):
     text = extract_text(filepath)
 
-    # Preprocessing (update with your real logic)
+    # Preprocessing
     processed = preprocess_text(text)
 
     model = load_model_for_year(year)
-    result = model.predict(processed)
+    result = model.predict(processed)[0]  # Get the first (and likely only) prediction
 
-    return f"Predicted Grade (Model {year}): {result[0]}"
+    max_scores = MAX_SCORES_BY_YEAR.get(year)
+    if not max_scores:
+        raise ValueError(f"No max scores defined for year {year}")
+
+    # Format each prediction as actual_score/max_score
+    formatted_scores = [f"{score:.4f}/{max_score}" for score, max_score in zip(result, max_scores)]
+    formatted_output = ", ".join(formatted_scores)
+
+    return f"Predicted Grade (Model {year}): {formatted_output}"
