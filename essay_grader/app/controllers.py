@@ -24,6 +24,7 @@ def upload_file():
             resultLSTM = grade_LSTM_essay(filepath, year)
             resultBERT = grade_BERT_essay(text, year)
             result = f"{resultLSTM} <br> {resultBERT}"
+            #result = f"{resultBERT}"
             return render_template('upload.html', result=result)
 
     return render_template('upload.html')

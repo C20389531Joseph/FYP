@@ -1,19 +1,19 @@
 import os
 import numpy as np
 import tensorflow as tf
-from tensorflow.keras.preprocessing.text import Tokenizer
+from tensorflow.keras.preprocessing.text import Tokenizer 
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 from docx import Document
 
 MODEL_PATHS = {
-    "2025": r"C:\Users\JOSEP\OneDrive\Documents\FYP\WebsiteDemo\essay_grading_model.keras",
+    "2025": r"C:\Users\JOSEP\OneDrive\Documents\FYP\DemoCode\essay_grading_model1.keras",
     "2024": r"C:\Users\JOSEP\OneDrive\Documents\FYP\NewModelData\essay_grading_model2.keras",
-    "2023": r"C:\Users\JOSEP\OneDrive\Documents\FYP\NewModelData\essay_grading_model3.keras"
+    "2023": r"C:\Users\JOSEP\OneDrive\Documents\FYP\generated_essays\essay_grading_model3.keras"
 }
 MAX_SCORES_BY_YEAR = {
     "2025": [4, 2, 3, 3, 6],
     "2024": [3, 2, 3, 2, 5],
-    #"2023": [3, 2, 3, 2, 5]
+    "2023": [3, 2, 3, 2, 5]
 }
 
 
