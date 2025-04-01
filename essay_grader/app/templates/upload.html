@@ -43,11 +43,19 @@
         <button id="darkModeToggle">Toggle Dark Mode</button>
 
         {% if result %}
-            <div id="result">
-                <strong>Results:</strong><br>
+            <div class="results">
                 {{ result|safe }}
             </div>
         {% endif %}
+
+        {% if explanation %}
+            <h3>AI Feedback</h3>
+            <div class="explanation">
+                <p>{{ explanation }}</p>
+            </div>
+        {% endif %}
+
+
     </div>
 
     <script>
