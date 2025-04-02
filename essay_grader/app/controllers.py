@@ -13,62 +13,67 @@ tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
 
 
 def generate_explanation(user_essay, scores):
-    #    exam_part = f"\n\nIn response to this exam question:\n\n{exam_question}\n\n"
-
-    # Compose different parts of the prompt
+    print("Hello")
     intro = "The user submitted the following answer:\n\n"
     scores_part = f"The grading model gave the following scores: {scores}\n\n"
-    instructions = "Please provide a clear, constructive explanation for the student to help them improve. Highlight what was done well and what could be improved. Do not repeat the question or the students answer."
+    instructions = "Please provide a clear, constructive explanation for the student to help them improve. Highlight what was done well and what could be improved. Do not repeat the question or the students answer. Feedback:"
 
     # Encode static parts
     intro_ids = tokenizer.encode(intro, add_special_tokens=False)
-    #exam_ids = tokenizer.encode(exam_part, add_special_tokens=False)
     scores_ids = tokenizer.encode(scores_part, add_special_tokens=False)
     instructions_ids = tokenizer.encode(instructions, add_special_tokens=False)
 
-    # Calculate remaining tokens for essay
-    #+ len(exam_ids)
-    static_token_count = len(intro_ids)  + len(scores_ids) + len(instructions_ids)
+    static_token_count = len(intro_ids) + len(scores_ids) + len(instructions_ids)
     max_tokens = 1024
-    available_for_essay = max_tokens - static_token_count
-
-    # Encode and truncate essay
+    max_new_tokens = 300
+    available_for_essay = max_tokens - max_new_tokens - static_token_count
+    print("available_for_essay")
+    print(available_for_essay)
+    # Encode full essay
     essay_ids = tokenizer.encode(user_essay, add_special_tokens=False)
-    essay_ids = essay_ids[:available_for_essay]
 
-    # Final input token sequence
-    #+ exam_ids
-    final_input_ids = intro_ids + essay_ids  + scores_ids + instructions_ids
-    final_prompt = tokenizer.decode(final_input_ids, skip_special_tokens=True)
-    print(len(final_input_ids))
-    # Run generation
-    max_context_length = 1024 - 150  # leave space for max_new_tokens
-    if len(final_input_ids) > max_context_length:
-        final_input_ids = final_input_ids[-max_context_length:]  # keep the most recent context
-        
-    final_prompt = tokenizer.decode(final_input_ids, skip_special_tokens=True)
+    # Split into chunks
+    chunk_size = available_for_essay
+    chunks = [essay_ids[i:i + chunk_size] for i in range(0, len(essay_ids), chunk_size)][:3]
 
-    # Run generation
-    output = generator(final_prompt, max_new_tokens=150, do_sample=True, temperature=0.7)
+    explanations = []
 
-    # Show result
-    print(output[0]['generated_text'])
-    generated_text = output[0]['generated_text']
-    explanation_start = generated_text.find("Feedback:")
-    explanation = generated_text[explanation_start + len("Feedback:"):].strip() if explanation_start != -1 else generated_text.strip()
+    for chunk in chunks:
+        final_input_ids = intro_ids + chunk + scores_ids + instructions_ids
 
-    # Optional: tidy up weird repetition or excessive length
-    explanation = explanation.split("Score:")[0].strip()  # Remove trailing rubric junk if it appears
+        # Truncate from start if necessary to maintain total 1024 tokens
+        max_context_length = 1024 - 350  # leave space for max_new_tokens
+        if len(final_input_ids) > max_context_length:
+            final_input_ids = final_input_ids[-max_context_length:]  # keep the most recent context
+        print("final_input_ids")
+        print(len(final_input_ids))
+        final_prompt = tokenizer.decode(final_input_ids, skip_special_tokens=True)
+        print("final_prompt")
+        # Generate
+        output = generator(final_prompt, max_new_tokens=300, do_sample=True, temperature=0.7)
+        generated_text = output[0]['generated_text']
 
-    return explanation
+        # Extract feedback
+        explanation_start = generated_text.find("Feedback:")
+        explanation = generated_text[explanation_start + len("Feedback:"):].strip() if explanation_start != -1 else generated_text.strip()
+
+        explanation = explanation.split("Score:")[0].strip()  # Clean up
+        explanations.append(explanation)
+
+    full_explanation = "\n\n".join(explanations)
+    return full_explanation
+
+
+
+
+
 def get_exam_paper_path(year):
     # Map years to filenames
     paper_map = {
-        "2023": "2023CMPU4007.dox",
-        "2024": "2024CMPU4007.docx",
+        "2023": "2023Adv4007.docx",
+        "2024": "2024Adv4007.docx",
         "2025": "SampleQuestions.docx",
     }
-
     filename = paper_map.get(str(year))
     if not filename:
         raise FileNotFoundError(f"No paper defined for year {year}")
