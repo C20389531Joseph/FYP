@@ -1,9 +1,11 @@
 from flask import Blueprint, render_template, request, current_app
+import openai
 from .modules_BERT import grade_BERT_essay, extract_text
 from .models import grade_LSTM_essay
 import os
-import openai
 from transformers import pipeline, GPT2Tokenizer
+from docx import Document
+
 
 main = Blueprint('main', __name__)
 
@@ -16,7 +18,7 @@ def generate_explanation(user_essay, scores):
     print("Hello")
     intro = "The user submitted the following answer:\n\n"
     scores_part = f"The grading model gave the following scores: {scores}\n\n"
-    instructions = "Please provide a clear, constructive explanation for the student to help them improve. Highlight what was done well and what could be improved. Do not repeat the question or the students answer. Feedback:"
+    instructions = "Please provide a clear, constructive explanation for the student to help them improve. Highlight what was done well and what could be improved. Feedback:"
 
     # Encode static parts
     intro_ids = tokenizer.encode(intro, add_special_tokens=False)
@@ -64,27 +66,27 @@ def generate_explanation(user_essay, scores):
     return full_explanation
 
 
-
-
-
 def get_exam_paper_path(year):
     # Map years to filenames
     paper_map = {
-        "2023": "2023Adv4007.docx",
-        "2024": "2024Adv4007.docx",
-        "2025": "SampleQuestions.docx",
+        "2023Adv4007": "2023Adv4007.docx",
+        "2024Adv4007": "2024Adv4007.docx",
+        "SampleQuestions": "SampleQuestions.docx",
     }
     filename = paper_map.get(str(year))
     if not filename:
         raise FileNotFoundError(f"No paper defined for year {year}")
     print(current_app.root_path)
-    base_path = r"C:\Users\JOSEP\Documents\FYP\FYP\essay_grader\app\static\exams"
+    base_path = os.path.join(current_app.root_path, 'static', 'exams')
     full_path = os.path.join(base_path, filename)
     if not os.path.exists(full_path):
         raise FileNotFoundError(f"File {full_path} does not exist")
 
     return full_path
 
+def extract_text_from_docx(filepath):
+    doc = Document(filepath)
+    return "\n".join([para.text for para in doc.paragraphs if para.text.strip()])
 
 @main.route('/', methods=['GET', 'POST'])
 def upload_file():
@@ -115,7 +117,7 @@ def upload_file():
                 exam_text = "\n".join(p.text for p in exam_doc.paragraphs)
 
             # Grade using LSTM and BERT
-            resultLSTM = grade_LSTM_essay(filepath, year)
+            resultLSTM = grade_LSTM_essay(text, year)
             resultBERT = grade_BERT_essay(text, year)
 
             # Format grading results nicely
@@ -124,11 +126,11 @@ def upload_file():
             <h4>BERT Grades:</h4> {resultBERT}
             """
 
-            # Generate AI feedback explanation
+            # # Generate AI feedback explanation
             try:
-                explanation = generate_explanation(text, result_html)
+                 explanation = generate_explanation(text, result_html)
             except openai.error.InvalidRequestError as e:
-                explanation = "AI feedback could not be generated due to quota limits."
+                 explanation = "AI feedback could not be generated due to quota limits."
 
             # Return result to template
             return render_template(

@@ -1,3 +1,7 @@
+# Module for grading essays using BERT-based models.
+# Supports loading year-specific models and generating scores for input essays.
+# Author: Joseph Egan    Complier: VSCode   Last updated:15/04/2025
+
 import os
 import torch
 from transformers import BertTokenizer, BertModel
@@ -15,12 +19,12 @@ def extract_text(filepath):
     else:
         raise ValueError("Unsupported file type. Only .txt and .docx are allowed.")
 
-MODEL_PATHS = {'2025': 'C:\\Users\\JOSEP\\Documents\\bert_essay_grading_model', '2024': 'C:\\Users\\JOSEP\\Documents\\bert_essay_grading_model2', '2023': 'C:\\Users\\JOSEP\\Documents\\bert_essay_grading_model3'}
+MODEL_PATHS = {'SampleQuestions': 'C:\\Users\\JOSEP\\Documents\\bert_essay_grading_model', '2024Adv4007': 'C:\\Users\\JOSEP\\Documents\\bert_essay_grading_model2', '2023Adv4007': 'C:\\Users\\JOSEP\\Documents\\bert_essay_grading_model3'}
 
 MAX_SCORES_BY_YEAR = {
-    "2025": [4, 2, 3, 3, 6],
-    "2024": [3, 2, 3, 2, 5],
-    "2023": [3, 2, 3, 2, 5]
+    "SampleQuestions": [4, 2, 3, 3, 6],
+    "2024Adv4007": [3, 2, 3, 2, 5],
+    "2023Adv4007": [3, 2, 3, 2, 5]
 }
 
 _loaded_models = {}
@@ -46,11 +50,15 @@ def preprocess(text):
 def grade_BERT_essay(text, year):
     model = load_model_for_year(year)
     inputs = preprocess(text)
+    
     with torch.no_grad():
         outputs = model(**inputs)
+        
     scores = outputs.logits.squeeze().tolist()
-    if isinstance(scores, float):  # In case there's only one score
+    
+    if isinstance(scores, float):  # error handling
         scores = [scores]
+        
     max_scores = MAX_SCORES_BY_YEAR[year]
     formatted_scores = [f"{score:.4f}/{max_score}" for score, max_score in zip(scores, max_scores)]
     return f"Predicted Grade BERT model: {year}\n" + ", ".join(formatted_scores)

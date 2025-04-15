@@ -1,70 +1,63 @@
+# Utility module for loading and running LSTM models for essay grading.
+# Includes support for multiple model years and tokenizers.
+# Author: Joseph Egan    Complier: VSCode   Last updated:15/04/2025
+
 import os
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras.preprocessing.text import Tokenizer 
 from tensorflow.keras.preprocessing.sequence import pad_sequences
-from docx import Document
+import pickle
 
-MODEL_PATHS = {
-    "2025": r"C:\Users\JOSEP\OneDrive\Documents\FYP\DemoCode\essay_grading_model1.keras",
-    "2024": r"C:\Users\JOSEP\OneDrive\Documents\FYP\NewModelData\essay_grading_model2.keras",
-    "2023": r"C:\Users\JOSEP\OneDrive\Documents\FYP\generated_essays\essay_grading_model3.keras"
-}
+# Top-level global load to avoid models not loading in loader functions (unknown why they do not load)
+MODEL_PATH = r"C:\Users\JOSEP\Documents\LSTMMocks\essay_grading_model_v2.keras"
+TOKENIZER_PATH = r"C:\Users\JOSEP\Documents\LSTMMocks\tokenizer.pkl"
+
+model2 = r"C:\Users\JOSEP\Documents\LSTM2024\essay_grading_model_2024.keras"
+tokenizer2 = r"C:\Users\JOSEP\Documents\LSTM2024\tokenizer.pkl"
+
+model3 = r"C:\Users\JOSEP\Documents\LSTM2023\essay_grading_model_2023.keras"
+tokenizer3 = r"C:\Users\JOSEP\Documents\LSTM2023\tokenizer.pkl"
+
+modelSampleQuestions = tf.keras.models.load_model(MODEL_PATH)
+with open(TOKENIZER_PATH, "rb") as f:
+    tokenizerSampleQuestions = pickle.load(f)
+    
+model2024 = tf.keras.models.load_model(model2)
+with open(tokenizer2, "rb") as f:
+    tokenizer2024 = pickle.load(f)
+    
+model2023 = tf.keras.models.load_model(model3)
+with open(tokenizer3, "rb") as f:
+    tokenizer2023s = pickle.load(f)
+    
 MAX_SCORES_BY_YEAR = {
-    "2025": [4, 2, 3, 3, 6],
-    "2024": [3, 2, 3, 2, 5],
-    "2023": [3, 2, 3, 2, 5]
+    "SampleQuestions": [2, 3, 3, 2],
+    "2024Adv4007": [3, 2, 3, 2, 5],
+    "2023Adv4007": [3, 2, 3, 2, 5]
 }
 
 
-_loaded_models = {}
+def grade_LSTM_essay(text,year):
+    print("grade_")
+    if (year == 'SampleQuestions'):
+        sequence = tokenizerSampleQuestions.texts_to_sequences([text])
+        model = modelSampleQuestions
+        
+    if (year == '2024Adv4007'):
+        sequence = tokenizer2024.texts_to_sequences([text])
+        model = model2024
+        
+    if (year == '2023Adv4007'):
+        sequence = tokenizer2023s.texts_to_sequences([text])
+        model = model2023
+        
+    padded = pad_sequences(sequence, maxlen=500, padding='post', truncating='post')
 
-# Initialize tokenizer (ideally, you'd load your trained tokenizer)
-tokenizer = Tokenizer(num_words=10000, oov_token="<OOV>")
-tokenizer.fit_on_texts(["dummy"])  # Prevent tokenizer errors before real fitting
+    max_scores = np.array(MAX_SCORES_BY_YEAR[year])
 
-def preprocess_text(text):
-    # Tokenize
-    sequences = tokenizer.texts_to_sequences([text])
-    # Pad to the expected length
-    padded = pad_sequences(sequences, maxlen=500, padding='post', truncating='post')
-    return padded
-
-def load_model_for_year(year):
-    if year not in _loaded_models:
-        model_path = MODEL_PATHS.get(year)
-        if model_path:
-            _loaded_models[year] = tf.keras.models.load_model(model_path)
-        else:
-            raise ValueError(f"No model found for year {year}")
-    return _loaded_models[year]
-
-def extract_text(filepath):
-    ext = os.path.splitext(filepath)[1].lower()
-    if ext == ".txt":
-        with open(filepath, 'r', encoding='utf-8', errors='ignore') as f:
-            return f.read()
-    elif ext == ".docx":
-        doc = Document(filepath)
-        return "\n".join([para.text for para in doc.paragraphs])
-    else:
-        raise ValueError("Unsupported file type. Only .txt and .docx are allowed.")
-
-def grade_LSTM_essay(filepath, year):
-    text = extract_text(filepath)
-
-    # Preprocessing
-    processed = preprocess_text(text)
-
-    model = load_model_for_year(year)
-    result = model.predict(processed)[0]  # Get the first (and likely only) prediction
-
-    max_scores = MAX_SCORES_BY_YEAR.get(year)
-    if not max_scores:
-        raise ValueError(f"No max scores defined for year {year}")
-
-    # Format each prediction as actual_score/max_score
-    formatted_scores = [f"{score:.4f}/{max_score}" for score, max_score in zip(result, max_scores)]
-    formatted_output = ", ".join(formatted_scores)
-
-    return f"Predicted Grade LSTM model {year}: \n{formatted_output}"
+    # Predict using preloaded model
+    raw_scores = model.predict(padded)[0]
+    
+    formatted_scores = [f"{s:.4f}/{m}" for s, m in zip(raw_scores, max_scores)]
+    return f"Predicted Grade LSTM model: {year}\n" + ", ".join(formatted_scores)
